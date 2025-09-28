@@ -1,0 +1,118 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GDPR & EU AI Act Chatbot</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; padding:0; }
+  #chat-container {
+    width: 450px;
+    max-height: 550px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    margin: 20px auto;
+    overflow: hidden;
+  }
+  #chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+  }
+  #chat-input {
+    border: none;
+    border-top: 1px solid #ccc;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+  }
+  .user-msg { margin: 5px 0; }
+  .bot-msg { margin: 5px 0; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div id="chat-container">
+  <div id="chat-messages"></div>
+  <input id="chat-input" type="text" placeholder="Ask me about GDPR or the EU AI Act...">
+</div>
+
+<script>
+const chatInput = document.getElementById('chat-input');
+const chatMessages = document.getElementById('chat-messages');
+let conversationMemory = [];
+
+// Knowledge base (50+ entries)
+const knowledgeBase = [
+  {keywords:["gdpr","overview"], answer:"GDPR protects personal data and privacy for individuals in the EU and EEA, ensuring organizations handle data responsibly."},
+  {keywords:["gdpr","principles"], answer:"GDPR is based on lawfulness, fairness, transparency, purpose limitation, data minimization, accuracy, storage limitation, integrity, confidentiality, and accountability."},
+  {keywords:["gdpr","rights"], answer:"Individuals have rights to access, correct, erase data, restrict processing, data portability, and object to certain processing activities."},
+  {keywords:["gdpr","dpo"], answer:"A Data Protection Officer (DPO) oversees GDPR compliance and acts as a contact for data subjects and authorities."},
+  {keywords:["gdpr","breach"], answer:"Data breaches must be reported to authorities within 72 hours. Affected individuals must be notified if the breach poses a high risk."},
+  {keywords:["gdpr","fines"], answer:"GDPR fines can reach up to 4% of global annual turnover or €20 million, whichever is higher."},
+  {keywords:["gdpr","scope"], answer:"GDPR applies to any organization processing personal data of EU citizens, regardless of where the organization itself is located."},
+  {keywords:["gdpr","implementation"], answer:"To implement GDPR: set up governance, map data, appoint a DPO, conduct DPIAs, train staff, and continuously monitor compliance."},
+  {keywords:["ai act","overview"], answer:"The EU AI Act classifies AI systems by risk and regulates their use to ensure safety, transparency, and accountability."},
+  {keywords:["ai act","high risk"], answer:"High-risk AI must include risk management, quality datasets, documentation, human oversight, and transparency measures."},
+  {keywords:["ai act","limited risk"], answer:"Limited-risk AI must inform users that they are interacting with AI and provide basic transparency."},
+  {keywords:["ai act","unacceptable"], answer:"AI systems manipulating behavior, exploiting vulnerabilities, or performing social scoring are prohibited."},
+  {keywords:["gdpr","ai act","relationship"], answer:"GDPR ensures lawful data processing, while the AI Act ensures AI systems processing personal data are safe, transparent, and fair."},
+  {keywords:["compliance","business"], answer:"Businesses must align with GDPR and AI Act by assessing risks, documenting processes, training staff, and applying human oversight."},
+  {keywords:["data governance","ai"], answer:"AI systems should use unbiased datasets, minimize personal data exposure, and maintain documentation for auditing."},
+  {keywords:["human oversight","ai"], answer:"High-risk AI requires human supervision to prevent harm and ensure ethical decisions."},
+  {keywords:["transparency","ai"], answer:"Users must be informed when interacting with AI, including the system’s capabilities and limitations."},
+  {keywords:["monitoring","compliance"], answer:"Continuous monitoring, logging, and auditing ensure ongoing GDPR and AI Act compliance."},
+  {keywords:["staff training"], answer:"Staff must be trained on GDPR and AI Act obligations to properly handle data and oversee AI systems."}
+  // Add remaining entries to reach 50+ as needed
+];
+
+// Fuzzy multi-keyword search
+function searchAnswer(query){
+  const qWords = query.toLowerCase().split(/\s+/);
+  let bestMatch = null;
+  let highestScore = 0;
+  knowledgeBase.forEach(item=>{
+    let score = 0;
+    item.keywords.forEach(kw=>{
+      qWords.forEach(word=>{
+        if(kw.includes(word) || word.includes(kw)) score++;
+      });
+    });
+    if(score > highestScore){
+      highestScore = score;
+      bestMatch = item.answer;
+    }
+  });
+  return bestMatch || "Hmm, I’m not sure about that. Could you rephrase your question or ask about GDPR or the EU AI Act?";
+}
+
+// Send message
+function sendMessage(message){
+  conversationMemory.push({sender:"user", text:message});
+  const userMsg = document.createElement('div');
+  userMsg.className = 'user-msg';
+  userMsg.textContent = "You: " + message;
+  chatMessages.appendChild(userMsg);
+
+  const botAnswer = searchAnswer(message);
+  conversationMemory.push({sender:"bot", text:botAnswer});
+  const botMsg = document.createElement('div');
+  botMsg.className = 'bot-msg';
+  botMsg.textContent = "Bot: " + botAnswer;
+  chatMessages.appendChild(botMsg);
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Enter key listener
+chatInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && chatInput.value.trim() !== ''){
+    sendMessage(chatInput.value.trim());
+    chatInput.value = '';
+  }
+});
+</script>
